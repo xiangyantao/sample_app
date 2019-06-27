@@ -11,7 +11,7 @@ gem 'bcrypt',                  '3.1.12'
 gem 'pry-rails', :group => :development
 gem 'rails-controller-testing'
 gem 'bootstrap-sass'
-gem 'bootstrap', '~> 4.1.3'
+gem 'bootstrap', '~> 4.3.1'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.2.3'
 #gem 'rails',                   '5.1.6'
