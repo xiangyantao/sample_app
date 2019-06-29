@@ -3,6 +3,9 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.6.0'
 
+
+gem 'carrierwave'             
+gem 'mini_magick'
 gem 'bootstrap-will_paginate'
 gem 'faker'
 gem 'jquery-rails', '~> 4.3', '>= 4.3.3'
@@ -74,3 +77,8 @@ end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+
+group :production do
+  gem 'pg',     '1.1.4'
+  gem 'fog'
+end

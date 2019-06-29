@@ -1,6 +1,15 @@
 class User < ApplicationRecord
+    has_many :microposts, dependent: :destroy
+    has_many :active_relationships, class_name:   "Relationship", 
+                                    foreign_key:  "follower_id",
+                                    dependent:    :destroy
+    has_many :passive_relationships, class_name: "Relationship",
+                                     foreign_key: "followed_id",
+                                     dependent:   :destroy
+    has_many :following, through: :active_relationships,  source: :followed
+    has_many :followers, through: :passive_relationships, source: :follower
 
-    attr_accessor :remember_token, :activation_token
+    attr_accessor :remember_token, :activation_token, :reset_token
 
     before_save   :downcase_email
     before_create :create_activation_digest
@@ -59,7 +68,46 @@ class User < ApplicationRecord
       UserMailer.account_activation(self).deliver_now
     end
 
+  # 设置密码重设相关的属性
+    def create_reset_digest
+      self.reset_token = User.new_token
+      update_attribute(:reset_digest, User.digest(reset_token))
+      update_attribute(:reset_sent_at, Time.zone.now)
+    end
 
+  # 发送密码重设邮件
+    def send_password_reset_email
+      UserMailer.password_reset(self).deliver_now
+    end
+
+  # 如果密码重设请求超时了，返回true
+    def password_reset_expired?
+      reset_sent_at < 2.hours.ago
+    end
+
+  # 返回用户的动态流
+  def feed
+    following_ids = "SELECT followed_id FROM relationships
+                     WHERE  follower_id = :user_id"
+    Micropost.where("user_id IN (#{following_ids})
+                     OR user_id = :user_id", user_id: id)
+  end
+
+  # 关注另一个用户
+    def follow(other_user)
+      following << other_user
+    end
+
+    # 取消关注另一个用户
+    def unfollow(other_user)
+      following.delete(other_user)
+    end
+
+    # 如果当前用户关注了指定的用户，返回true
+    def following?(other_user)
+      following.include?(other_user)
+    end
+    
     private
       #把电子邮件地址转换成小写
       def downcase_email
